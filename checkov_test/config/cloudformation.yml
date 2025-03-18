@@ -12,7 +12,7 @@ Resources:
       InstanceType: t2.micro
       ImageId: 'ami-0abcdef1234567890'
       SecurityGroups:
-        - 'default'  # Using default security group (this may allow wide open access)
+        - 'default'
       KeyName: 'my-key-pair'  # Exposing SSH access (could be flagged)
 
 Outputs:
