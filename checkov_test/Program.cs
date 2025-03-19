@@ -7,4 +7,3 @@ var host = builder.Build();
 host.Run();
 
 Console.WriteLine("Press any key to exit.");
-Console.WriteLine("Hello and Bye");
