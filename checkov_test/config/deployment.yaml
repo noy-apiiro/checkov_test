@@ -19,4 +19,4 @@ spec:
             - containerPort: 80
           # Missing resource limits (should be added for security)
           securityContext:
-            privileged: true  # Privileged mode is not recommended for production
+            privileged: true 
