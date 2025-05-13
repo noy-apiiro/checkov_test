@@ -10,3 +10,4 @@ spec:
       port: 80
       targetPort: 80
   type: ClusterIP
+  # Exposed service on port 80 might be vulnerable in production
