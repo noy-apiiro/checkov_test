@@ -1,22 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: example-deployment
+  name: bad-deployment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: example-app
+      app: bad-app
   template:
     metadata:
       labels:
-        app: example-app
+        app: bad-app
     spec:
       containers:
-        - name: example-container
+        - name: bad-container
           image: nginx:latest
+          securityContext:
+            privileged: true
           ports:
             - containerPort: 80
-          # Missing resource limits (should be added for security)
-          securityContext:
-            privileged: true 
