@@ -7,4 +7,3 @@ var host = builder.Build();
 host.Run();
 
 Console.WriteLine("Add changes in .cs file");
-Console.WriteLine("Press any key to exit.");
