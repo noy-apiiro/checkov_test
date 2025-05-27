@@ -6,3 +6,4 @@ builder.Services.AddHostedService<Worker>();
 var host = builder.Build();
 host.Run();
 
+Console.WriteLine("Press any key to exit...");
