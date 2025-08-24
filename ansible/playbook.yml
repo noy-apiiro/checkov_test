@@ -7,3 +7,11 @@
         image: nginx:latest  # This should trigger CKV_ANSIBLE_1 or similar
         state: started
         privileged: true     # This is a security risk
+
+    - name: Run vulnerable container
+      community.docker.docker_container:
+        name: insecure-env
+        image: nginx:1.25
+        env:
+          API_KEY: "hardcoded_api_key_12345"
+        state: started
