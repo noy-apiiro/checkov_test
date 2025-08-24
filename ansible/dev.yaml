@@ -1,8 +1,10 @@
-# ansible playbook to set up some docker containers
-
 - name: Set up an analytics node
   hosts: dev
   gather_facts: true
+  vars:
+    postgres_password: "{{ lookup('env', 'POSTGRES_PASSWORD') }}"
+    dashboard_api_key: "{{ lookup('env', 'API_KEY') }}"
+    dashboard_auth_secret: "{{ lookup('env', 'AUTH_SECRET') }}"
   tasks:
     - name: Create network
       community.docker.docker_network:
@@ -13,13 +15,13 @@
     - name: Create postgres containers
       community.docker.docker_container:
         name: "{{ item.name }}"
-        image: postgres:16
+        image: postgres:16.2  # use specific version, not latest
         state: started
         restart_policy: unless-stopped
         network_mode: analytics-net
         env:
           POSTGRES_USER: analytics
-          POSTGRES_PASSWORD: securepass
+          POSTGRES_PASSWORD: "{{ postgres_password }}"
           POSTGRES_DB: analytics_db
         volumes:
           - "{{ item.name }}_data:/var/lib/postgresql/data"
@@ -28,6 +30,8 @@
           interval: 5s
           timeout: 3s
           retries: 5
+        cpu_shares: 512
+        memory: "512m"
       loop:
         - name: analytics-postgres
         - name: analytics-postgres-metrics
@@ -39,35 +43,46 @@
         state: started
         restart_policy: unless-stopped
         network_mode: analytics-net
+        user: "1001"
+        memory: "256m"
 
     - name: Run the analytics API backend
       community.docker.docker_container:
         name: analytics-backend
-        image: myregistry.io/analytics/api-backend:latest
+        image: myregistry.io/analytics/api-backend:1.4.3  # pinned tag
         state: started
         pull: true
         restart_policy: unless-stopped
         network_mode: analytics-net
+        user: "1001"
         env:
           POSTGRES_HOST: analytics-postgres
           API_KEY_ALLOW_ALL: "true"
           WORKER_THREADS: "4"
         ports:
           - 5000:5000
+        cpu_shares: 512
+        memory: "512m"
+        healthcheck:
+          test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+          interval: 10s
+          timeout: 5s
+          retries: 3
 
     - name: Run the analytics dashboard frontend
       community.docker.docker_container:
         name: analytics-dashboard
-        image: myregistry.io/analytics/frontend:latest
+        image: myregistry.io/analytics/frontend:2.1.0  # pinned version
         state: started
         pull: true
         restart_policy: unless-stopped
         network_mode: analytics-net
+        user: "1001"
         env:
           API_URL: http://analytics-backend:5000
-          API_KEY: "supersecret"
-          DATABASE_URL: postgres://analytics:securepass@analytics-postgres-metrics/analytics_db
-          AUTH_SECRET: s3cur3S3cr3tK3y!
+          API_KEY: "{{ dashboard_api_key }}"
+          DATABASE_URL: postgres://analytics:{{ postgres_password }}@analytics-postgres-metrics/analytics_db
+          AUTH_SECRET: "{{ dashboard_auth_secret }}"
           MAIL_SERVER: analytics-mail
           MAIL_PORT: "1025"
           MAIL_FROM: no-reply@analytics.io
@@ -75,3 +90,10 @@
         ports:
           - 4000:3000
         command: bash wait-for-db.sh && node start-dashboard.js
+        cpu_shares: 512
+        memory: "512m"
+        healthcheck:
+          test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+          interval: 10s
+          timeout: 5s
+          retries: 3
