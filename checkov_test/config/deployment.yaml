@@ -19,3 +19,8 @@ spec:
             privileged: true
           ports:
             - containerPort: 80
+        - name: app
+          image: nginx
+          env:
+            - name: API_KEY
+              value: "hardcoded_api_key_1234567890"  # This is the issue (CKV3_SAST_154)
