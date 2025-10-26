@@ -1,4 +1,4 @@
-name: Insecure CI
+name: Insecure_CI
 
 on: [push]
 
@@ -13,3 +13,4 @@ jobs:
         run: |
           echo "API_KEY=1234567890abcdef" >> $GITHUB_ENV
           curl -X POST https://example.com/deploy --header "Authorization: Bearer $API_KEY"
+          
