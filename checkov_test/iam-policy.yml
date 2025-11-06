@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template with an overly permissive IAM policy (CKV_AWS_62)
+
+Resources:
+  InsecurePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: InsecureAdminPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: "*"
+            Resource: "*"
+      Roles:
+        - !Ref SomeRole
+
+  SomeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: example-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
