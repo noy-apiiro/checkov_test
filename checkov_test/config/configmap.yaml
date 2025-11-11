@@ -4,4 +4,3 @@ metadata:
   name: example-configmap
 data:
   app-config: "Sensitive Information"
-  # Sensitive data exposed in ConfigMap (should avoid storing sensitive data directly)
